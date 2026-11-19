@@ -12,6 +12,7 @@
         'div[id="cookieBanner"]',
         'div[aria-labelledby="app-stores-banner-description"]',
         'aside',
+        'button[data-testid="side-panel-expand-button"]',
         'nav:has([data-testid="storefront-tabs-mobile-icon-text"])',
         'nav:has([aria-labelledby="product-navigation-mobile-bar-translator-link"])',
     ].join(',');
