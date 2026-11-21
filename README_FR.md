@@ -7,6 +7,10 @@ Elle utilise une technologie appelée WebView, un composant d'interface graphiqu
 JavaScript est utilisé pour masquer tous les éléments à l'exception des plus nécessaires.
   
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/packages/com.sakusaku3939.datranslator)
+
 <table>
   <tr>
     <td width="25%"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Logo au démarrage" width="100%"></a></td>

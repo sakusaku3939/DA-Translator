@@ -6,6 +6,10 @@ Questa è un'applicazione Android non ufficiale per traduzioni DeepL (precedente
 Usa una tecnologia chiamata WebView, una componente GUI di Android, per farla sembrare come un'app nativa.
 JavaScript è usato per nascondere tutto tranne gli elementi più necessari.
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/packages/com.sakusaku3939.datranslator)
+
 <table>
   <tr>
     <td width="25%"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Logo all’avvio" width="100%"></a></td>

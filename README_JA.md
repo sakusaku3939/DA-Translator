@@ -6,6 +6,10 @@ DeepL翻訳の非公式Androidアプリです。（旧称: DeepLAndroid）
 AndroidのGUIコンポーネントの「WebView」といわれる技術を使用してDeepL翻訳をネイティブアプリ風にしたものです。  
 必要な要素以外はJavaScriptを使用して隠しています。  
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/packages/com.sakusaku3939.datranslator)
+
 <table>
   <tr>
     <td width="25%"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="起動時のロゴ" width="100%"></a></td>

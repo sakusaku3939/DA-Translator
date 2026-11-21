@@ -6,6 +6,10 @@
 Оно использует технологию WebView, компонент интерфейса Android, чтобы выглядеть как нативное приложение.  
 Чтобы скрыть все ненужные элементы, используется JavaScript.  
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/packages/com.sakusaku3939.datranslator)
+
 <table>
   <tr>
     <td width="25%"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Логотип при запуске" width="100%"></a></td>

@@ -6,6 +6,10 @@ Toto je neoficiální Android aplikace pro DeepL překlady (dříve známá jako
 Využívá technologii WebView, komponentu grafického uživatelského rozhraní systému Android, aby vypadala jako nativní aplikace.  
 JavaScript se používá ke skrytí všech prvků kromě těch nejnutnějších  
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/packages/com.sakusaku3939.datranslator)
+
 <table>
   <tr>
     <td width="25%"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Logo při spuštění" width="100%"></a></td>

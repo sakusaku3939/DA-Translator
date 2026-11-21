@@ -6,6 +6,10 @@
 它使用了 WebView 技术，这是 Android 图形用户界面的一个组件，使其看起来像一个原生应用。
 为了隐藏所有不必要的元素，只保留最必要的部分，使用了 JavaScript。
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="在 F-Droid 获取"
+    height="80">](https://f-droid.org/packages/com.sakusaku3939.datranslator)
+
 <table>
   <tr>
     <td width="25%"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="启动标志" width="100%"></a></td>

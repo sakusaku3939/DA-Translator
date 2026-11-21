@@ -6,6 +6,10 @@ Dies ist eine inoffizielle Android-App für den DeepL-Übersetzer (früher bekan
 Es verwendet eine Technologie namens WebView, eine Android-GUI-Komponente, um es wie eine native App aussehen zu lassen. 
 JavaScript wird verwendet, um alle bis auf die notwendigsten Elemente auszublenden.
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/packages/com.sakusaku3939.datranslator)
+
 <table>
   <tr>
     <td width="25%"><a href="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Logo beim Start" width="100%"></a></td>
