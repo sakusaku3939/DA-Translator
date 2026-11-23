@@ -64,7 +64,8 @@ object UrlHelper {
             ""
         }
 
-        return "$originUrl$uiLanguage/$normalizedPageType$translatorParam"
+        // DeepL picks a supported UI language from Accept-Language and redirects.
+        return "$originUrl$normalizedPageType$translatorParam"
     }
 
     /**
@@ -166,17 +167,21 @@ object UrlHelper {
 
         if (!languageCodeRegex.matches(normalizedSource) ||
             !languageCodeRegex.matches(normalizedTarget)) return null
-        if (normalizedSource == "auto" ||
-            normalizedSource.substringBefore('-') == normalizedTarget.substringBefore('-')) return null
+        if (normalizedSource == "auto") return null
 
-        return "/l/${canonicalLanguageCode(normalizedSource)}/${canonicalLanguageCode(normalizedTarget)}"
+        val canonicalSource = canonicalLanguageCode(normalizedSource)
+        val canonicalTarget = canonicalLanguageCode(normalizedTarget)
+        if (canonicalSource.substringBefore('-') == canonicalTarget.substringBefore('-')) return null
+
+        return "/l/$canonicalSource/$canonicalTarget"
     }
 
     // DeepL paths are case-sensitive: lowercase regional codes trigger redirects.
     private fun canonicalLanguageCode(language: String): String =
         language.split('-').mapIndexed { index, part ->
             when {
-                index == 0 -> part
+                // Converts legacy ISO 639 codes (in, iw, ji) to the codes DeepL uses.
+                index == 0 -> Locale.forLanguageTag(part).toLanguageTag()
                 part.length == 2 && part.all { it in 'a'..'z' } -> part.uppercase(Locale.US)
                 part.length == 4 && part.all { it in 'a'..'z' } ->
                     part.replaceFirstChar { it.uppercaseChar() }

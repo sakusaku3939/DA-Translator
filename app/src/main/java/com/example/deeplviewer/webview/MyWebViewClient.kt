@@ -37,6 +37,7 @@ class MyWebViewClient(
     private val viewId = java.util.UUID.randomUUID().toString()
     private var loadId = 0
     private var awaitingStart = false
+    private var hasStartedPage = false
 
     private fun record(name: String, url: String?, fields: Map<String, Any?> = emptyMap()) {
         Diagnostics.event(name, mapOf("view_id" to viewId, "load_id" to loadId,
@@ -57,16 +58,22 @@ class MyWebViewClient(
 
     override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
         val url = request?.url.toString()
-        val blocked = !DEEPL_INTERNAL_REGEX.matches(url)
+        val isRedirect = Build.VERSION.SDK_INT >= 24 && request?.isRedirect == true
+        val blocked = !isAllowedNavigation(url, isRedirect)
         record("navigation_decision", url, mapOf("blocked" to blocked,
             "main_frame" to request?.isForMainFrame,
             "redirect" to if (Build.VERSION.SDK_INT >= 24) request?.isRedirect else null,
             "gesture" to request?.hasGesture()))
+        // Nothing has been displayed yet, so keeping the splash would leave the app stuck.
+        if (blocked && request?.isForMainFrame == true && !hasStartedPage) {
+            showErrorScreen(url)
+        }
         return blocked
     }
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
+        hasStartedPage = true
         if (!awaitingStart) loadId++
         awaitingStart = false
         record("page_started", url, mapOf("network" to org.json.JSONObject(Diagnostics.networkState())))
@@ -118,19 +125,7 @@ class MyWebViewClient(
             "chromium_error" to DiagnosticPrivacy.chromiumError(if (Build.VERSION.SDK_INT >= 23) error?.description?.toString() else null),
             "network" to org.json.JSONObject(Diagnostics.networkState())))
         if (request.isForMainFrame) {
-            if (activity is com.example.deeplviewer.activity.FloatingTextSelection) {
-                activity.showNetworkError()
-            } else {
-                activity.setContentView(R.layout.network_err)
-            }
-            record("error_screen_shown", request.url.toString())
-            activity.findViewById<View>(R.id.save_diagnostics).setOnClickListener {
-                activity.startActivity(Intent(activity, DiagnosticExportActivity::class.java))
-            }
-
-            val button: ImageButton = activity.findViewById(R.id.reload)
-            val listener = ReloadButtonListener()
-            button.setOnClickListener(listener)
+            showErrorScreen(request.url.toString())
 
             val errorDescription =
                 DiagnosticPrivacy.chromiumError(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) error?.description?.toString() else null)
@@ -159,6 +154,22 @@ class MyWebViewClient(
     override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
         record("renderer_gone", view.url, mapOf("crashed" to detail.didCrash(), "priority" to detail.rendererPriorityAtExit()))
         return super.onRenderProcessGone(view, detail)
+    }
+
+    private fun showErrorScreen(url: String) {
+        if (activity is com.example.deeplviewer.activity.FloatingTextSelection) {
+            activity.showNetworkError()
+        } else {
+            activity.setContentView(R.layout.network_err)
+        }
+        record("error_screen_shown", url)
+        activity.findViewById<View>(R.id.save_diagnostics).setOnClickListener {
+            activity.startActivity(Intent(activity, DiagnosticExportActivity::class.java))
+        }
+
+        val button: ImageButton = activity.findViewById(R.id.reload)
+        val listener = ReloadButtonListener()
+        button.setOnClickListener(listener)
     }
 
     /**
@@ -254,6 +265,15 @@ class MyWebViewClient(
     }
 
     companion object {
+        /**
+         * Allows translator/write pages and DeepL's own redirects inside www.deepl.com,
+         * so changes in DeepL's URL layout are followed instead of blocked.
+         */
+        fun isAllowedNavigation(url: String, isRedirect: Boolean): Boolean {
+            return DEEPL_INTERNAL_REGEX.matches(url) ||
+                (isRedirect && url.startsWith("https://www.deepl.com/"))
+        }
+
         private val POLYFILL_JS = """
             if(!window.chrome){window.chrome={};}
             if(!window.speechSynthesis){window.speechSynthesis={getVoices:function(){return[];},speak:function(){},cancel:function(){},pause:function(){},resume:function(){},addEventListener:function(){},removeEventListener:function(){}};}

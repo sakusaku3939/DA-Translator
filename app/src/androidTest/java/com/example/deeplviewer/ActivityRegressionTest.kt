@@ -14,9 +14,12 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.example.deeplviewer.helper.UrlHelper
 import com.example.deeplviewer.activity.FloatingTextSelection
 import com.example.deeplviewer.activity.MainActivity
+import com.example.deeplviewer.webview.MyWebViewClient
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -125,6 +128,67 @@ class ActivityRegressionTest {
         ActivityScenario.launch(FloatingTextSelection::class.java).use { scenario ->
             scenario.onActivity { assertNotNull(it) }
         }
+    }
+
+    @Test
+    fun blockedNavigationBeforeAnyPageShowsErrorScreen() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                val webView = activity.findViewById<WebView>(R.id.webview)
+                webView.stopLoading()
+                val client = MyWebViewClient(activity)
+                assertTrue(client.shouldOverrideUrlLoading(webView,
+                    navigationRequest("https://example.com/translator", isRedirect = true)))
+                assertNotNull(activity.findViewById<View>(R.id.reload))
+            }
+        }
+    }
+
+    @Test
+    fun blockedLinkAfterPageStartedKeepsCurrentPage() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                val webView = activity.findViewById<WebView>(R.id.webview)
+                webView.stopLoading()
+                val client = MyWebViewClient(activity)
+                client.onPageStarted(webView, "https://www.deepl.com/en/translator", null)
+                assertTrue(client.shouldOverrideUrlLoading(webView,
+                    navigationRequest("https://example.com/", isRedirect = false)))
+                assertNull(activity.findViewById<View>(R.id.reload))
+                assertNotNull(activity.findViewById<WebView>(R.id.webview))
+            }
+        }
+    }
+
+    @Test
+    fun deepLRedirectBeforeAnyPageIsFollowed() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity ->
+                val webView = activity.findViewById<WebView>(R.id.webview)
+                webView.stopLoading()
+                val client = MyWebViewClient(activity)
+                assertFalse(client.shouldOverrideUrlLoading(webView,
+                    navigationRequest("https://www.deepl.com/en/in/translator/l/en/in", isRedirect = true)))
+                assertNull(activity.findViewById<View>(R.id.reload))
+            }
+        }
+    }
+
+    @Test
+    fun legacyLanguageCodesAreConvertedOnDevice() {
+        // Android 11 and older report Indonesian/Hebrew/Yiddish with legacy codes.
+        assertEquals("/l/en/id", UrlHelper.normalizeUrlParam("/l/en/in"))
+        assertEquals("/l/en/he", UrlHelper.normalizeUrlParam("/l/en/iw"))
+        assertEquals("/l/en/yi", UrlHelper.normalizeUrlParam("/l/en/ji"))
+    }
+
+    private fun navigationRequest(url: String, isRedirect: Boolean) = object : WebResourceRequest {
+        override fun getUrl(): Uri = Uri.parse(url)
+        override fun isForMainFrame(): Boolean = true
+        override fun isRedirect(): Boolean = isRedirect
+        override fun hasGesture(): Boolean = false
+        override fun getMethod(): String = "GET"
+        override fun getRequestHeaders(): Map<String, String> = emptyMap()
     }
 
     private val mainFrameRequest = object : WebResourceRequest {
