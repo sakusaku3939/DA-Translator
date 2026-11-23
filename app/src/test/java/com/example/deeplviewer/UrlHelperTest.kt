@@ -14,15 +14,15 @@ class UrlHelperTest {
         for (language in languages) {
             for (stored in listOf(language.lowercase(java.util.Locale.US), language.uppercase(java.util.Locale.US), language)) {
                 for (param in listOf("/l/ru/$stored", "#ru/$stored/")) {
-                    val url = UrlHelper.buildPageUrl("translator", param, uiLanguage = "en")
+                    val url = UrlHelper.buildPageUrl("translator", param, deviceLanguage = "en")
                     assertEquals("https://www.deepl.com/translator/l/ru/$language", url)
                     assertEquals(url, UrlHelper.buildWebViewUrl(url, ""))
                     val saved = UrlHelper.extractUrlParam(url)
-                    assertEquals(url, UrlHelper.buildPageUrl("translator", saved, uiLanguage = "en"))
+                    assertEquals(url, UrlHelper.buildPageUrl("translator", saved, deviceLanguage = "en"))
                     val sharedUrl = UrlHelper.buildWebViewUrl(url, text)
                     org.junit.Assert.assertTrue(sharedUrl.startsWith("https://www.deepl.com/translator#ru/$language/"))
                     assertEquals(text, UrlHelper.extractText(sharedUrl))
-                    assertEquals("https://www.deepl.com/write", UrlHelper.buildPageUrl("write", saved, uiLanguage = "en"))
+                    assertEquals("https://www.deepl.com/write", UrlHelper.buildPageUrl("write", saved, deviceLanguage = "en"))
                 }
             }
         }
@@ -31,11 +31,11 @@ class UrlHelperTest {
     @Test
     fun sourceScriptAndDefaultTargetUseCanonicalCase() {
         assertEquals("https://www.deepl.com/translator/l/zh-Hant/en-US",
-            UrlHelper.buildPageUrl("translator", "/l/ZH-HANT/en-us", uiLanguage = "en"))
+            UrlHelper.buildPageUrl("translator", "/l/ZH-HANT/en-us", deviceLanguage = "en"))
         assertEquals("https://www.deepl.com/translator/l/en/pt-BR",
-            UrlHelper.buildPageUrl("translator", null, uiLanguage = "pt-br"))
+            UrlHelper.buildPageUrl("translator", null, deviceLanguage = "pt-br"))
         assertEquals("https://www.deepl.com/translator/l/en/de",
-            UrlHelper.buildPageUrl("translator", null, uiLanguage = "en-us"))
+            UrlHelper.buildPageUrl("translator", null, deviceLanguage = "en-us"))
     }
 
     @Test
@@ -56,7 +56,7 @@ class UrlHelperTest {
                 assertNull(param, UrlHelper.normalizeUrlParam(param))
                 assertEquals(
                     "https://www.deepl.com/translator/l/en/ja",
-                    UrlHelper.buildPageUrl("translator", param, uiLanguage = "ja")
+                    UrlHelper.buildPageUrl("translator", param, deviceLanguage = "ja")
                 )
             }
     }
@@ -79,7 +79,7 @@ class UrlHelperTest {
             assertNull(param, UrlHelper.extractUrlParam("https://www.deepl.com/ja/translator$param"))
             assertEquals(
                 "https://www.deepl.com/translator/l/en/ja",
-                UrlHelper.buildPageUrl("translator", param, uiLanguage = "ja")
+                UrlHelper.buildPageUrl("translator", param, deviceLanguage = "ja")
             )
         }
     }
@@ -116,20 +116,20 @@ class UrlHelperTest {
     @Test
     fun startUrlLeavesUiLanguageChoiceToDeepL() {
         // DeepL redirects unsupported UI languages to /en/<language>/..., which used to be blocked.
-        listOf("ja", "da", "vi", "in", "iw", "fil", "en").forEach { uiLanguage ->
-            val translatorUrl = UrlHelper.buildPageUrl("translator", null, uiLanguage = uiLanguage)
+        listOf("ja", "da", "vi", "in", "iw", "fil", "en").forEach { deviceLanguage ->
+            val translatorUrl = UrlHelper.buildPageUrl("translator", null, deviceLanguage = deviceLanguage)
             assertTrue(translatorUrl, translatorUrl.startsWith("https://www.deepl.com/translator/l/en/"))
             assertEquals("https://www.deepl.com/write",
-                UrlHelper.buildPageUrl("write", null, uiLanguage = uiLanguage))
+                UrlHelper.buildPageUrl("write", null, deviceLanguage = deviceLanguage))
         }
     }
 
     @Test
     fun legacyLanguageCodesBecomeDeepLCodes() {
         assertEquals("https://www.deepl.com/translator/l/en/id",
-            UrlHelper.buildPageUrl("translator", null, uiLanguage = "in"))
+            UrlHelper.buildPageUrl("translator", null, deviceLanguage = "in"))
         assertEquals("https://www.deepl.com/translator/l/en/he",
-            UrlHelper.buildPageUrl("translator", null, uiLanguage = "iw"))
+            UrlHelper.buildPageUrl("translator", null, deviceLanguage = "iw"))
         assertEquals("/l/en/id", UrlHelper.normalizeUrlParam("/l/en/in"))
         assertEquals("/l/yi/he", UrlHelper.normalizeUrlParam("#ji/iw/"))
         assertEquals("/l/en/id", UrlHelper.extractUrlParam("https://www.deepl.com/id/translator/l/en/in"))

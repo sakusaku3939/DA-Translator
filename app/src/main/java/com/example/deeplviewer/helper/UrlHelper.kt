@@ -46,7 +46,7 @@ object UrlHelper {
         pageType: String,
         urlParam: String?,
         originUrl: String = DEFAULT_ORIGIN_URL,
-        uiLanguage: String = getUiLanguage()
+        deviceLanguage: String = getDeviceLanguage()
     ): String {
         val normalizedPageType = when (pageType) {
             WRITE_PAGE_TYPE -> WRITE_PAGE_TYPE
@@ -54,7 +54,7 @@ object UrlHelper {
         }
         val normalizedUrlParam = normalizeUrlParam(urlParam)
             ?: if (normalizedPageType == TRANSLATOR_PAGE_TYPE) {
-                buildDefaultLanguagePath(uiLanguage)
+                buildDefaultLanguagePath(deviceLanguage)
             } else {
                 null
             }
@@ -189,7 +189,7 @@ object UrlHelper {
             }
         }.joinToString("-")
 
-    private fun getUiLanguage(): String {
+    private fun getDeviceLanguage(): String {
         return Locale.getDefault().language
             .lowercase(Locale.US)
             .takeIf { Regex("[a-z]{2}").matches(it) }
@@ -202,15 +202,15 @@ object UrlHelper {
             ?.get(1)
             ?.lowercase(Locale.US)
             ?.takeIf { Regex("[a-z]{2}(?:-[a-z0-9]{2,8})?").matches(it) }
-            ?: getUiLanguage()
+            ?: getDeviceLanguage()
         val normalizedTarget = target.takeUnless { it.substringBefore('-') == DEFAULT_SOURCE_LANGUAGE }
             ?: DEFAULT_FALLBACK_TARGET_LANGUAGE
 
         return LanguagePair(DEFAULT_SOURCE_LANGUAGE, canonicalLanguageCode(normalizedTarget))
     }
 
-    private fun buildDefaultLanguagePath(uiLanguage: String): String {
-        val target = uiLanguage.lowercase(Locale.US)
+    private fun buildDefaultLanguagePath(deviceLanguage: String): String {
+        val target = deviceLanguage.lowercase(Locale.US)
             .takeIf { Regex("[a-z]{2}(?:-[a-z0-9]{2,8})?").matches(it) }
             ?.takeUnless { it.substringBefore('-') == DEFAULT_SOURCE_LANGUAGE }
             ?: DEFAULT_FALLBACK_TARGET_LANGUAGE
