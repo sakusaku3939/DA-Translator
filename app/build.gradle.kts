@@ -12,8 +12,8 @@ android {
         applicationId = "com.sakusaku3939.datranslator"
         minSdk = 21
         targetSdk = 36
-        versionCode = 54
-        versionName = "11.0"
+        versionCode = 55
+        versionName = "11.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunner = "com.karumi.shot.ShotTestRunner"
