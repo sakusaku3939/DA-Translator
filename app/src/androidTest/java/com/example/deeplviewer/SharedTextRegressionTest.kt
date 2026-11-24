@@ -30,6 +30,44 @@ class SharedTextRegressionTest {
         assertSharedText(text)
     }
 
+    @Test
+    fun sharedTextSurvivesDeepLLanguageRedirect() {
+        // The start URL has no UI language path, so DeepL redirects before the text is read.
+        val text = "こんにちは / redirect + text"
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val monitor = instrumentation.addMonitor(MainActivity::class.java.name, null, false)
+        val intent = Intent(instrumentation.targetContext, MainActivity::class.java)
+            .setAction(Intent.ACTION_SEND)
+            .setType("text/plain")
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            .putExtra(Intent.EXTRA_TEXT, text)
+        var activity: MainActivity? = null
+        try {
+            instrumentation.targetContext.startActivity(intent)
+            activity = instrumentation.waitForMonitorWithTimeout(monitor, 10000) as? MainActivity
+            assertNotNull("Sharing must launch MainActivity", activity)
+            val launchedActivity = activity!!
+            var redirectedUrl: String? = null
+            val deadline = SystemClock.uptimeMillis() + 30000
+            while (redirectedUrl == null && SystemClock.uptimeMillis() < deadline) {
+                instrumentation.runOnMainSync {
+                    val url = launchedActivity.findViewById<WebView>(R.id.webview)?.url
+                    if (url != null && url.matches(Regex("^https://www\\.deepl\\.com/[^/#?]+/translator#.*$"))) {
+                        redirectedUrl = url
+                    }
+                }
+                if (redirectedUrl == null) SystemClock.sleep(100)
+            }
+            assertNotNull("DeepL must redirect to a localized translator page", redirectedUrl)
+            assertEquals("Shared text must survive the redirect", text, UrlHelper.extractText(redirectedUrl))
+        } finally {
+            activity?.let { launchedActivity ->
+                instrumentation.runOnMainSync { launchedActivity.finish() }
+            }
+            instrumentation.removeMonitor(monitor)
+        }
+    }
+
     private fun assertSharedText(text: CharSequence) {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val monitor = instrumentation.addMonitor(MainActivity::class.java.name, null, false)

@@ -46,7 +46,7 @@ object UrlHelper {
         pageType: String,
         urlParam: String?,
         originUrl: String = DEFAULT_ORIGIN_URL,
-        uiLanguage: String = getUiLanguage()
+        deviceLanguage: String = getDeviceLanguage()
     ): String {
         val normalizedPageType = when (pageType) {
             WRITE_PAGE_TYPE -> WRITE_PAGE_TYPE
@@ -54,7 +54,7 @@ object UrlHelper {
         }
         val normalizedUrlParam = normalizeUrlParam(urlParam)
             ?: if (normalizedPageType == TRANSLATOR_PAGE_TYPE) {
-                buildDefaultLanguagePath(uiLanguage)
+                buildDefaultLanguagePath(deviceLanguage)
             } else {
                 null
             }
@@ -64,7 +64,8 @@ object UrlHelper {
             ""
         }
 
-        return "$originUrl$uiLanguage/$normalizedPageType$translatorParam"
+        // DeepL picks a supported UI language from Accept-Language and redirects.
+        return "$originUrl$normalizedPageType$translatorParam"
     }
 
     /**
@@ -166,17 +167,21 @@ object UrlHelper {
 
         if (!languageCodeRegex.matches(normalizedSource) ||
             !languageCodeRegex.matches(normalizedTarget)) return null
-        if (normalizedSource == "auto" ||
-            normalizedSource.substringBefore('-') == normalizedTarget.substringBefore('-')) return null
+        if (normalizedSource == "auto") return null
 
-        return "/l/${canonicalLanguageCode(normalizedSource)}/${canonicalLanguageCode(normalizedTarget)}"
+        val canonicalSource = canonicalLanguageCode(normalizedSource)
+        val canonicalTarget = canonicalLanguageCode(normalizedTarget)
+        if (canonicalSource.substringBefore('-') == canonicalTarget.substringBefore('-')) return null
+
+        return "/l/$canonicalSource/$canonicalTarget"
     }
 
     // DeepL paths are case-sensitive: lowercase regional codes trigger redirects.
     private fun canonicalLanguageCode(language: String): String =
         language.split('-').mapIndexed { index, part ->
             when {
-                index == 0 -> part
+                // Converts legacy ISO 639 codes (in, iw, ji) to the codes DeepL uses.
+                index == 0 -> Locale.forLanguageTag(part).toLanguageTag()
                 part.length == 2 && part.all { it in 'a'..'z' } -> part.uppercase(Locale.US)
                 part.length == 4 && part.all { it in 'a'..'z' } ->
                     part.replaceFirstChar { it.uppercaseChar() }
@@ -184,7 +189,7 @@ object UrlHelper {
             }
         }.joinToString("-")
 
-    private fun getUiLanguage(): String {
+    private fun getDeviceLanguage(): String {
         return Locale.getDefault().language
             .lowercase(Locale.US)
             .takeIf { Regex("[a-z]{2}").matches(it) }
@@ -197,15 +202,15 @@ object UrlHelper {
             ?.get(1)
             ?.lowercase(Locale.US)
             ?.takeIf { Regex("[a-z]{2}(?:-[a-z0-9]{2,8})?").matches(it) }
-            ?: getUiLanguage()
+            ?: getDeviceLanguage()
         val normalizedTarget = target.takeUnless { it.substringBefore('-') == DEFAULT_SOURCE_LANGUAGE }
             ?: DEFAULT_FALLBACK_TARGET_LANGUAGE
 
         return LanguagePair(DEFAULT_SOURCE_LANGUAGE, canonicalLanguageCode(normalizedTarget))
     }
 
-    private fun buildDefaultLanguagePath(uiLanguage: String): String {
-        val target = uiLanguage.lowercase(Locale.US)
+    private fun buildDefaultLanguagePath(deviceLanguage: String): String {
+        val target = deviceLanguage.lowercase(Locale.US)
             .takeIf { Regex("[a-z]{2}(?:-[a-z0-9]{2,8})?").matches(it) }
             ?.takeUnless { it.substringBefore('-') == DEFAULT_SOURCE_LANGUAGE }
             ?: DEFAULT_FALLBACK_TARGET_LANGUAGE
